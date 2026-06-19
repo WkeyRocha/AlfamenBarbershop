@@ -263,3 +263,8 @@ body {
     .selection-bar-actions { width: 100%; }
     .btn-sel-book { flex: 1; justify-content: center; }
 }
+
+/* Garante que filhos do card não bloqueiem o clique */
+.service-card > * {
+    pointer-events: none;
+}

@@ -29,8 +29,8 @@
     <main class="container">
         <section class="hero">
             <h1>Seu estilo,<br>nossa assinatura.</h1>
-            <p class="subtitle">Agende seu horário com exclusividade.</p>
-            
+            <p class="subtitle">Escolha um ou mais serviços e agende seu horário.</p>
+
             <div id="user-status-card" class="user-status hidden">
                 <div class="status-info">
                     <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted);">Seu Agendamento</span>
@@ -55,67 +55,65 @@
                 <h3 id="modal-title">Agendar</h3>
                 <button class="btn-close" onclick="app.closeModal('modal-booking')">&times;</button>
             </div>
-            
+
+            <!-- Passo 1: Data e Horário -->
             <div id="step-date" class="step-content">
-                <p class="step-label">Data</p>
+                <p class="step-label">Escolha a data</p>
                 <div id="calendar-wrapper" class="horizontal-scroll"></div>
                 <div id="time-wrapper" class="hidden">
-                    <p class="step-label" style="margin-top:20px;">Horário</p>
+                    <p class="step-label" style="margin-top:20px;">Escolha o horário</p>
                     <div id="time-grid" class="time-grid"></div>
                 </div>
             </div>
 
+            <!-- Passo 2: Dados do cliente -->
             <div id="step-form" class="step-content hidden">
                 <div class="summary-box">
-                    <span id="summary-service">Serviço</span>
-                    <span id="summary-datetime" class="highlight">Data</span>
+                    <span id="summary-service" style="font-weight:600; display:block; margin-bottom:4px;"></span>
+                    <span id="summary-datetime" class="highlight"></span>
+                    <span id="summary-total" class="hidden" style="font-size:0.85rem; color:var(--text-muted); margin-top:6px; display:block;"></span>
                 </div>
-                <input type="text" id="client-name" class="input-field" placeholder="Seu Nome Completo">
-                <input type="tel" id="client-phone" class="input-field" placeholder="WhatsApp (DDD + Número)">
-                <button class="btn-primary" onclick="app.confirmBooking()">Confirmar Agendamento</button>
-                <button class="btn-text full-width" onclick="app.backToDate()">Voltar</button>
+                <input type="text" id="client-name"  class="input-field" placeholder="Seu Nome Completo">
+                <input type="tel"  id="client-phone" class="input-field" placeholder="WhatsApp (DDD + Número)">
+                <button class="btn-primary" onclick="app.confirmBooking()">
+                    <i class="fa-solid fa-check"></i> Confirmar Agendamento
+                </button>
+                <button class="btn-text full-width" onclick="app.backToDate()">← Voltar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Admin Login -->
-    <div id="modal-admin" class="modal-overlay hidden" style="z-index: 200;">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>Acesso Administrativo</h3>
-                <button class="btn-close" onclick="app.closeModal('modal-admin')">&times;</button>
+    <!-- Modal WhatsApp -->
+    <div id="modal-whatsapp" class="modal-overlay hidden" style="z-index: 300;">
+        <div class="modal-card" style="max-width: 380px; text-align: center;">
+            <div class="wa-modal-icon">
+                <i class="fa-brands fa-whatsapp"></i>
             </div>
-            <div id="admin-login-view">
-                <p style="margin-bottom:15px; font-size:0.9rem; color:var(--text-muted);">Área restrita à gerência.</p>
-                <input type="text" id="adm-user" class="input-field" placeholder="Usuário">
-                <input type="password" id="adm-pass" class="input-field" placeholder="Senha">
-                <button class="btn-primary" onclick="app.loginAdmin()">Acessar</button>
-            </div>
+            <h3 style="margin-bottom: 8px;">Agendamento confirmado! 🎉</h3>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:18px;">
+                Deseja enviar os detalhes do agendamento para a barbearia via WhatsApp?
+            </p>
+            <div id="wa-booking-summary" class="wa-summary-box"></div>
+            <button id="wa-btn-barbearia" class="btn-whatsapp">
+                <i class="fa-brands fa-whatsapp"></i> Enviar mensagem para a barbearia
+            </button>
+            <button id="wa-btn-skip" class="btn-text full-width" style="margin-top: 10px;">
+                Não, obrigado
+            </button>
         </div>
     </div>
 
-    <!-- Modal Booking (Nível 1) -->
-    <!-- Modal Seletor de Ícones -->
-    <div id="modal-icons" class="modal-overlay hidden" style="z-index: 300;">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>Escolher Ícone</h3>
-                <button class="btn-close" onclick="app.closeModal('modal-icons')">&times;</button>
-            </div>
-            <div id="icons-grid" class="icons-grid"></div>
-        </div>
-    </div>
-
-    <!-- Dialog -->
+    <!-- Dialog genérico -->
     <div id="modal-dialog" class="modal-overlay hidden" style="z-index: 400;">
         <div class="modal-card" style="max-width: 350px; text-align: center;">
             <div style="margin-bottom: 20px;">
-                <i id="dialog-icon" class="fa-solid fa-circle-exclamation" style="font-size: 2rem; color: var(--accent); margin-bottom: 15px;"></i>
+                <i id="dialog-icon" class="fa-solid fa-circle-exclamation"
+                   style="font-size: 2rem; color: var(--accent); margin-bottom: 15px; display:block;"></i>
                 <h3 id="dialog-title" style="margin-bottom: 10px;">Atenção</h3>
-                <p id="dialog-msg" style="color: var(--text-muted); font-size: 0.95rem;">Mensagem aqui</p>
+                <p id="dialog-msg" style="color: var(--text-muted); font-size: 0.95rem;"></p>
             </div>
             <div class="dialog-actions">
-                <button id="btn-dialog-cancel" class="btn-text" style="width: 48%;">Cancelar</button>
+                <button id="btn-dialog-cancel"  class="btn-text"    style="width: 48%;">Cancelar</button>
                 <button id="btn-dialog-confirm" class="btn-primary" style="width: 48%; margin-top: 0;">Confirmar</button>
             </div>
         </div>

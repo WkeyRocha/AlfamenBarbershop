@@ -175,3 +175,91 @@ body {
     .hero h1 { font-size: 2rem; }
     .whatsapp-float { bottom: 20px; right: 20px; width: 52px; height: 52px; font-size: 1.5rem; }
 }
+
+/* ── SELEÇÃO MÚLTIPLA DE SERVIÇOS ──────────────────────────────── */
+
+.service-card { position: relative; }
+
+.service-check {
+    position: absolute; top: 12px; right: 12px;
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg-body);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; color: transparent;
+    transition: 0.2s;
+}
+.service-card.selected .service-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+.service-card.selected {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    box-shadow: 0 4px 20px rgba(197,160,89,0.18);
+    transform: translateY(-3px);
+}
+
+/* Barra de seleção flutuante */
+.selection-bar {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--text-main); color: var(--bg-card);
+    border-radius: 18px; padding: 14px 20px;
+    display: flex; align-items: center; gap: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    z-index: 90; min-width: 320px; max-width: 90vw;
+    animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideUp { from { opacity:0; transform: translateX(-50%) translateY(20px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+.selection-bar-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.selection-bar-info span { font-size: 0.82rem; opacity: 0.8; }
+.sel-total { font-size: 1.05rem !important; font-weight: 800; opacity: 1 !important; color: var(--accent); }
+
+.selection-bar-actions { display: flex; gap: 10px; align-items: center; }
+.btn-sel-clear {
+    background: none; border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.7); padding: 8px 14px; border-radius: 10px;
+    font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: 0.2s;
+}
+.btn-sel-clear:hover { border-color: rgba(255,255,255,0.6); color: white; }
+.btn-sel-book {
+    background: var(--accent); color: white;
+    border: none; padding: 10px 18px; border-radius: 12px;
+    font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    white-space: nowrap;
+}
+.btn-sel-book:hover { opacity: 0.9; transform: scale(1.03); }
+
+/* Ajusta o float do WhatsApp quando a barra estiver visível */
+.whatsapp-float { bottom: 100px; }
+
+/* ── MODAL WHATSAPP ──────────────────────────────────────────────── */
+.wa-modal-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(37,211,102,0.12); border: 2px solid rgba(37,211,102,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #25D366;
+    margin: 0 auto 18px;
+}
+.wa-summary-box {
+    background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px; margin-bottom: 20px;
+    font-size: 0.9rem; line-height: 1.6; text-align: left;
+}
+.btn-whatsapp {
+    width: 100%; padding: 15px; border: none; border-radius: 12px;
+    background: #25D366; color: white;
+    font-size: 1rem; font-weight: 700; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: 0.2s;
+}
+.btn-whatsapp:hover { background: #1ebe5d; transform: translateY(-1px); }
+
+@media (max-width: 480px) {
+    .selection-bar { flex-direction: column; align-items: flex-start; bottom: 16px; min-width: 0; width: calc(100vw - 32px); }
+    .selection-bar-actions { width: 100%; }
+    .btn-sel-book { flex: 1; justify-content: center; }
+}

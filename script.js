@@ -15,8 +15,8 @@ const app = {
     ],
     state: {
         services: [], bookings: [], config: {},
-        selectedServices: [],   // array de serviços escolhidos
-        currentSelection: {},   // { date, time }
+        selectedServices: [],
+        currentSelection: {},
         theme: 'light',
         userBookingId: null
     },
@@ -56,7 +56,7 @@ const app = {
         const btn = document.getElementById('whatsapp-float');
         const num = this.state.config.whatsapp;
         if (num) {
-            btn.href = `https://wa.me/${num}?text=${encodeURIComponent('Olá! Gostaria de informações sobre os serviços.')}`;
+            btn.href = 'https://wa.me/' + num + '?text=' + encodeURIComponent('Olá! Gostaria de informações sobre os serviços.');
             btn.classList.remove('hidden');
         } else {
             btn.classList.add('hidden');
@@ -93,8 +93,8 @@ const app = {
         }
 
         modal.classList.remove('hidden');
-        btnOk.onclick = () => { modal.classList.add('hidden'); if (onConfirm) onConfirm(); };
-        btnCancel.onclick = () => { modal.classList.add('hidden'); if (onCancel) onCancel(); };
+        btnOk.onclick = function() { modal.classList.add('hidden'); if (onConfirm) onConfirm(); };
+        btnCancel.onclick = function() { modal.classList.add('hidden'); if (onCancel) onCancel(); };
     },
 
     closeModal(id) { document.getElementById(id).classList.add('hidden'); },
@@ -104,10 +104,10 @@ const app = {
         const card    = document.getElementById('user-status-card');
         const details = document.getElementById('user-booking-details');
         if (this.state.userBookingId) {
-            const b = this.state.bookings.find(x => x.id == this.state.userBookingId);
+            const b = this.state.bookings.find(x => String(x.id) === String(this.state.userBookingId));
             if (b) {
                 card.classList.remove('hidden');
-                details.innerText = `${b.service} — ${b.date} às ${b.time}`;
+                details.innerText = b.service + ' — ' + b.date + ' às ' + b.time;
             } else {
                 localStorage.removeItem('pantera_user_booking_id');
                 this.state.userBookingId = null;
@@ -120,7 +120,7 @@ const app = {
 
     promptCancelBooking() {
         this.showDialog('Cancelar Agendamento', 'Tem certeza? Isso liberará a vaga para outros.', 'danger', () => {
-            this.state.bookings = this.state.bookings.filter(b => b.id != this.state.userBookingId);
+            this.state.bookings = this.state.bookings.filter(b => String(b.id) !== String(this.state.userBookingId));
             localStorage.setItem('pantera_bookings', JSON.stringify(this.state.bookings));
             localStorage.removeItem('pantera_user_booking_id');
             this.state.userBookingId = null;
@@ -131,81 +131,139 @@ const app = {
 
     // ── SERVIÇOS (seleção múltipla) ───────────────────────────────────
     renderServices() {
+        const self = this;
         const grid = document.getElementById('services-grid');
         grid.innerHTML = '';
-        this.state.services.forEach(s => {
+
+        this.state.services.forEach(function(s, idx) {
             const card = document.createElement('div');
             card.className = 'service-card';
-            card.dataset.id = s.id;
-            card.onclick = () => this.toggleService(s, card);
-            card.innerHTML = `
-                <div class="service-check"><i class="fa-solid fa-check"></i></div>
-                <i class="fa-solid ${s.icon || 'fa-cut'} service-icon"></i>
-                <span class="service-name">${s.name}</span>
-                <span class="service-price">R$ ${Number(s.price).toLocaleString('pt-BR')},00</span>`;
+            card.dataset.idx = String(idx);
+
+            // Cria elementos filhos manualmente para evitar qualquer problema de innerHTML + onclick
+            const checkDiv = document.createElement('div');
+            checkDiv.className = 'service-check';
+            checkDiv.innerHTML = '<i class="fa-solid fa-check"></i>';
+
+            const iconEl = document.createElement('i');
+            iconEl.className = 'fa-solid ' + (s.icon || 'fa-cut') + ' service-icon';
+
+            const nameEl = document.createElement('span');
+            nameEl.className = 'service-name';
+            nameEl.textContent = s.name;
+
+            const priceEl = document.createElement('span');
+            priceEl.className = 'service-price';
+            priceEl.textContent = 'R$ ' + Number(s.price).toLocaleString('pt-BR') + ',00';
+
+            card.appendChild(checkDiv);
+            card.appendChild(iconEl);
+            card.appendChild(nameEl);
+            card.appendChild(priceEl);
+
+            // Listener no card, filhos com pointer-events:none via CSS
+            card.addEventListener('click', function(e) {
+                self.toggleService(idx, card);
+            });
+
             grid.appendChild(card);
         });
 
-        // Barra flutuante de seleção
         this.renderSelectionBar();
     },
 
-    toggleService(service, card) {
+    toggleService(idx, card) {
         if (this.state.userBookingId) {
             this.showDialog('Atenção', 'Você já tem um horário marcado. Cancele o atual para agendar um novo.', 'info');
             return;
         }
 
-        const idx = this.state.selectedServices.findIndex(s => s.id === service.id);
-        if (idx === -1) {
-            this.state.selectedServices.push(service);
+        const service = this.state.services[idx];
+        if (!service) return;
+
+        // Busca pelo nome (robusto contra diferença de tipo de id)
+        const alreadyIdx = this.state.selectedServices.findIndex(function(s) {
+            return s.name === service.name;
+        });
+
+        if (alreadyIdx === -1) {
+            // Copia o objeto para evitar referência mutável
+            this.state.selectedServices.push({
+                id:    service.id,
+                name:  service.name,
+                price: service.price,
+                icon:  service.icon
+            });
             card.classList.add('selected');
         } else {
-            this.state.selectedServices.splice(idx, 1);
+            this.state.selectedServices.splice(alreadyIdx, 1);
             card.classList.remove('selected');
         }
+
         this.updateSelectionBar();
     },
 
     renderSelectionBar() {
-        // Remove se já existir
         const old = document.getElementById('selection-bar');
         if (old) old.remove();
 
         const bar = document.createElement('div');
         bar.id = 'selection-bar';
         bar.className = 'selection-bar hidden';
-        bar.innerHTML = `
-            <div class="selection-bar-info">
-                <span id="sel-count">0 serviços</span>
-                <span id="sel-total" class="sel-total">R$ 0</span>
-            </div>
-            <div class="selection-bar-actions">
-                <button class="btn-sel-clear" onclick="app.clearSelection()">Limpar</button>
-                <button class="btn-sel-book"  onclick="app.openBookingFromSelection()">
-                    <i class="fa-solid fa-calendar-plus"></i> Agendar
-                </button>
-            </div>`;
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'selection-bar-info';
+        infoDiv.innerHTML = '<span id="sel-count">0 serviços</span><span id="sel-total" class="sel-total">R$ 0</span>';
+
+        const actDiv = document.createElement('div');
+        actDiv.className = 'selection-bar-actions';
+
+        const btnClear = document.createElement('button');
+        btnClear.className = 'btn-sel-clear';
+        btnClear.textContent = 'Limpar';
+        btnClear.addEventListener('click', function(e) {
+            e.stopPropagation();
+            app.clearSelection();
+        });
+
+        const btnBook = document.createElement('button');
+        btnBook.className = 'btn-sel-book';
+        btnBook.innerHTML = '<i class="fa-solid fa-calendar-plus"></i> Agendar';
+        btnBook.addEventListener('click', function(e) {
+            e.stopPropagation();
+            app.openBookingFromSelection();
+        });
+
+        actDiv.appendChild(btnClear);
+        actDiv.appendChild(btnBook);
+        bar.appendChild(infoDiv);
+        bar.appendChild(actDiv);
         document.body.appendChild(bar);
     },
 
     updateSelectionBar() {
         const bar   = document.getElementById('selection-bar');
         const count = this.state.selectedServices.length;
-        const total = this.state.selectedServices.reduce((s, x) => s + Number(x.price), 0);
+        const total = this.state.selectedServices.reduce(function(s, x) { return s + Number(x.price); }, 0);
+
+        if (!bar) return;
 
         if (count === 0) {
             bar.classList.add('hidden');
-            return;
+        } else {
+            bar.classList.remove('hidden');
+            document.getElementById('sel-count').textContent =
+                count + ' serviço' + (count > 1 ? 's' : '') + ' selecionado' + (count > 1 ? 's' : '');
+            document.getElementById('sel-total').textContent =
+                'R$ ' + total.toLocaleString('pt-BR') + ',00';
         }
-        bar.classList.remove('hidden');
-        document.getElementById('sel-count').textContent = `${count} serviço${count > 1 ? 's' : ''} selecionado${count > 1 ? 's' : ''}`;
-        document.getElementById('sel-total').textContent = `R$ ${total.toLocaleString('pt-BR')},00`;
     },
 
     clearSelection() {
         this.state.selectedServices = [];
-        document.querySelectorAll('.service-card.selected').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.service-card.selected').forEach(function(c) {
+            c.classList.remove('selected');
+        });
         this.updateSelectionBar();
     },
 
@@ -213,10 +271,9 @@ const app = {
     openBookingFromSelection() {
         if (this.state.selectedServices.length === 0) return;
 
-        const names = this.state.selectedServices.map(s => s.name).join(', ');
-        document.getElementById('modal-title').innerText = this.state.selectedServices.length === 1
-            ? this.state.selectedServices[0].name
-            : `${this.state.selectedServices.length} serviços`;
+        const count = this.state.selectedServices.length;
+        document.getElementById('modal-title').innerText =
+            count === 1 ? this.state.selectedServices[0].name : count + ' serviços selecionados';
 
         document.getElementById('step-date').classList.remove('hidden');
         document.getElementById('step-form').classList.add('hidden');
@@ -226,45 +283,54 @@ const app = {
     },
 
     renderCalendar() {
+        const self    = this;
         const wrapper = document.getElementById('calendar-wrapper');
         wrapper.innerHTML = '';
         const today = new Date();
-        for (let i = 0; i < 14; i++) {
-            const d = new Date(today);
+        for (var i = 0; i < 14; i++) {
+            var d = new Date(today);
             d.setDate(today.getDate() + i);
-            const btn = document.createElement('div');
+            var btn = document.createElement('div');
             btn.className = 'date-chip';
-            btn.innerHTML = `
-                <span style="font-size:.75rem">${d.toLocaleDateString('pt-BR', { weekday: 'short' })}</span>
-                <span style="font-weight:bold;font-size:1.1rem">${d.getDate()}</span>`;
-            const full = d.toLocaleDateString('pt-BR');
-            btn.onclick = () => {
-                document.querySelectorAll('.date-chip').forEach(e => e.classList.remove('selected'));
-                btn.classList.add('selected');
-                this.state.currentSelection.date = full;
-                this.renderTimes();
-            };
+            btn.innerHTML =
+                '<span style="font-size:.75rem">' + d.toLocaleDateString('pt-BR', { weekday: 'short' }) + '</span>' +
+                '<span style="font-weight:bold;font-size:1.1rem">' + d.getDate() + '</span>';
+            var full = d.toLocaleDateString('pt-BR');
+            (function(fullDate, el) {
+                el.addEventListener('click', function() {
+                    document.querySelectorAll('.date-chip').forEach(function(e) { e.classList.remove('selected'); });
+                    el.classList.add('selected');
+                    self.state.currentSelection.date = fullDate;
+                    self.renderTimes();
+                });
+            })(full, btn);
             wrapper.appendChild(btn);
         }
     },
 
     renderTimes() {
+        const self = this;
         document.getElementById('time-wrapper').classList.remove('hidden');
         const grid = document.getElementById('time-grid');
         grid.innerHTML = '';
-        for (let h = 9; h <= 20; h++) {
-            const time = `${h}:00`;
-            const btn  = document.createElement('div');
+        for (var h = 9; h <= 20; h++) {
+            var time = h + ':00';
+            var btn  = document.createElement('div');
             btn.className = 'time-chip';
             btn.innerText = time;
-            const busy = this.state.bookings.some(b =>
-                b.date === this.state.currentSelection.date && b.time === time
-            );
-            if (busy) btn.classList.add('disabled');
-            else btn.onclick = () => {
-                this.state.currentSelection.time = time;
-                this.goToForm();
-            };
+            var busy = this.state.bookings.some(function(b) {
+                return b.date === self.state.currentSelection.date && b.time === time;
+            });
+            if (busy) {
+                btn.classList.add('disabled');
+            } else {
+                (function(t) {
+                    btn.addEventListener('click', function() {
+                        self.state.currentSelection.time = t;
+                        self.goToForm();
+                    });
+                })(time);
+            }
             grid.appendChild(btn);
         }
     },
@@ -273,14 +339,17 @@ const app = {
         document.getElementById('step-date').classList.add('hidden');
         document.getElementById('step-form').classList.remove('hidden');
 
-        const svcNames = this.state.selectedServices.map(s => s.name).join(' + ');
-        const total    = this.state.selectedServices.reduce((s, x) => s + Number(x.price), 0);
+        var svcNames = this.state.selectedServices.map(function(s) { return s.name; }).join(' + ');
+        var total    = this.state.selectedServices.reduce(function(s, x) { return s + Number(x.price); }, 0);
 
         document.getElementById('summary-service').innerText  = svcNames;
-        document.getElementById('summary-datetime').innerText =
-            `${this.state.currentSelection.date} — ${this.state.currentSelection.time}`;
-        document.getElementById('summary-total').innerText    = `Total: R$ ${total.toLocaleString('pt-BR')},00`;
-        document.getElementById('summary-total').classList.remove('hidden');
+        document.getElementById('summary-datetime').innerText = this.state.currentSelection.date + ' — ' + this.state.currentSelection.time;
+
+        var totalEl = document.getElementById('summary-total');
+        if (totalEl) {
+            totalEl.innerText = 'Total: R$ ' + total.toLocaleString('pt-BR') + ',00';
+            totalEl.classList.remove('hidden');
+        }
     },
 
     backToDate() {
@@ -288,21 +357,24 @@ const app = {
         document.getElementById('step-date').classList.remove('hidden');
     },
 
-    // ── CONFIRMAR AGENDAMENTO ──────────────────────────────────────────
+    // ── CONFIRMAR ─────────────────────────────────────────────────────
     confirmBooking() {
         const name  = document.getElementById('client-name').value.trim();
         const phone = document.getElementById('client-phone').value.trim();
-        if (!name || !phone) return this.showDialog('Erro', 'Preencha todos os campos.', 'info');
+        if (!name || !phone) {
+            this.showDialog('Erro', 'Preencha todos os campos.', 'info');
+            return;
+        }
 
-        const svcNames = this.state.selectedServices.map(s => s.name).join(' + ');
-        const total    = this.state.selectedServices.reduce((s, x) => s + Number(x.price), 0);
+        var svcNames = this.state.selectedServices.map(function(s) { return s.name; }).join(' + ');
+        var total    = this.state.selectedServices.reduce(function(s, x) { return s + Number(x.price); }, 0);
 
-        const id      = Date.now();
-        const booking = {
-            id,
+        var id = Date.now();
+        var booking = {
+            id:          id,
             service:     svcNames,
             price:       total,
-            services:    this.state.selectedServices.map(s => ({ name: s.name, price: s.price })),
+            services:    this.state.selectedServices.map(function(s) { return { name: s.name, price: s.price }; }),
             date:        this.state.currentSelection.date,
             time:        this.state.currentSelection.time,
             clientName:  name,
@@ -310,64 +382,60 @@ const app = {
             createdAt:   new Date().toISOString()
         };
 
-        // Salva
         this.state.bookings.push(booking);
         localStorage.setItem('pantera_bookings', JSON.stringify(this.state.bookings));
         this.state.userBookingId = id;
-        localStorage.setItem('pantera_user_booking_id', id);
+        localStorage.setItem('pantera_user_booking_id', String(id));
 
-        // Fecha modal de agendamento
         this.closeModal('modal-booking');
-
-        // Pergunta sobre WhatsApp
         this.promptWhatsApp(booking, name, phone);
     },
 
     // ── MODAL WHATSAPP ────────────────────────────────────────────────
     promptWhatsApp(booking, name, phone) {
-        const wa = this.state.config.whatsapp;
+        var wa = this.state.config.whatsapp;
 
-        // Monta a mensagem do cliente (para a barbearia)
-        const svcList = booking.services
-            ? booking.services.map(s => `• ${s.name} — R$ ${Number(s.price).toLocaleString('pt-BR')},00`).join('\n')
-            : `• ${booking.service}`;
+        var svcList = booking.services
+            ? booking.services.map(function(s) {
+                return '• ' + s.name + ' — R$ ' + Number(s.price).toLocaleString('pt-BR') + ',00';
+              }).join('\n')
+            : '• ' + booking.service;
 
-        const msgBarbearia = encodeURIComponent(
-            `*Novo Agendamento ✂️*\n\n` +
-            `*Cliente:* ${name}\n` +
-            `*WhatsApp:* ${phone}\n` +
-            `*Data:* ${booking.date} às ${booking.time}\n\n` +
-            `*Serviços:*\n${svcList}\n\n` +
-            `*Total:* R$ ${Number(booking.price).toLocaleString('pt-BR')},00`
+        var msgBarbearia = encodeURIComponent(
+            '*Novo Agendamento ✂️*\n\n' +
+            '*Cliente:* ' + name + '\n' +
+            '*WhatsApp:* ' + phone + '\n' +
+            '*Data:* ' + booking.date + ' às ' + booking.time + '\n\n' +
+            '*Serviços:*\n' + svcList + '\n\n' +
+            '*Total:* R$ ' + Number(booking.price).toLocaleString('pt-BR') + ',00'
         );
 
-        const linkBarbearia = wa ? `https://wa.me/${wa}?text=${msgBarbearia}` : null;
+        var linkBarbearia = wa ? 'https://wa.me/' + wa + '?text=' + msgBarbearia : null;
 
-        // Exibe modal customizado de WhatsApp
-        const waMod = document.getElementById('modal-whatsapp');
-        document.getElementById('wa-booking-summary').innerHTML =
-            `<strong>${booking.service}</strong><br>` +
-            `${booking.date} às ${booking.time}<br>` +
-            `<span style="color:var(--accent);font-weight:700;">Total: R$ ${Number(booking.price).toLocaleString('pt-BR')},00</span>`;
+        var waMod = document.getElementById('modal-whatsapp');
+        var summary = document.getElementById('wa-booking-summary');
+        summary.innerHTML =
+            '<strong>' + booking.service + '</strong><br>' +
+            booking.date + ' às ' + booking.time + '<br>' +
+            '<span style="color:var(--accent);font-weight:700;">Total: R$ ' + Number(booking.price).toLocaleString('pt-BR') + ',00</span>';
 
         waMod.classList.remove('hidden');
 
-        // Botão: enviar para barbearia
-        const btnBarbearia = document.getElementById('wa-btn-barbearia');
+        var btnBarbearia = document.getElementById('wa-btn-barbearia');
         if (linkBarbearia) {
             btnBarbearia.classList.remove('hidden');
-            btnBarbearia.onclick = () => {
-                window.open(linkBarbearia, '_blank');
-                this.closeModal('modal-whatsapp');
+            var link = linkBarbearia;
+            btnBarbearia.onclick = function() {
+                window.open(link, '_blank');
+                app.closeModal('modal-whatsapp');
                 location.reload();
             };
         } else {
             btnBarbearia.classList.add('hidden');
         }
 
-        // Botão: não enviar
-        document.getElementById('wa-btn-skip').onclick = () => {
-            this.closeModal('modal-whatsapp');
+        document.getElementById('wa-btn-skip').onclick = function() {
+            app.closeModal('modal-whatsapp');
             location.reload();
         };
     },
@@ -377,4 +445,4 @@ const app = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => app.init());
+document.addEventListener('DOMContentLoaded', function() { app.init(); });

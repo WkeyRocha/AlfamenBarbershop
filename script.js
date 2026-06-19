@@ -422,17 +422,19 @@ const app = {
         waMod.classList.remove('hidden');
 
         var btnBarbearia = document.getElementById('wa-btn-barbearia');
-        if (linkBarbearia) {
-            btnBarbearia.classList.remove('hidden');
-            var link = linkBarbearia;
-            btnBarbearia.onclick = function() {
-                window.open(link, '_blank');
+        btnBarbearia.classList.remove('hidden');
+        btnBarbearia.onclick = function() {
+            if (wa) {
+                window.open(linkBarbearia, '_blank');
                 app.closeModal('modal-whatsapp');
                 location.reload();
-            };
-        } else {
-            btnBarbearia.classList.add('hidden');
-        }
+            } else {
+                app.closeModal('modal-whatsapp');
+                app.showDialog('Aviso', 'O administrador da barbearia ainda não configurou um número de WhatsApp.', 'info', function() {
+                    location.reload();
+                });
+            }
+        };
 
         document.getElementById('wa-btn-skip').onclick = function() {
             app.closeModal('modal-whatsapp');

@@ -22,7 +22,7 @@ const admin = {
         this.state.services    = JSON.parse(localStorage.getItem('pantera_services'))    || this.defaultServices;
         this.state.bookings    = JSON.parse(localStorage.getItem('pantera_bookings'))    || [];
         this.state.config      = JSON.parse(localStorage.getItem('pantera_config'))      || { whatsapp: '' };
-        this.state.credentials = JSON.parse(localStorage.getItem('pantera_credentials')) || { user: 'panteraadm1', pass: 'pantera1' };
+        this.state.credentials = JSON.parse(localStorage.getItem('pantera_credentials')) || { user: 'adm1', pass: '123' };
 
         const theme = localStorage.getItem('pantera_theme') || 'light';
         this.setTheme(theme);

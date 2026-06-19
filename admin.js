@@ -33,7 +33,7 @@ const admin = {
 
     login() {
         const u = document.getElementById('login-user').value.trim();
-        const p = document.getElementById('login-pass').value;
+        const p = document.getElementById('login-pass').value.trim();
         const cred = this.state.credentials;
         if (u === cred.user && p === cred.pass) {
             localStorage.setItem('pantera_admin_logged_in', 'true');
@@ -422,7 +422,7 @@ const admin = {
         this.updateWaPreview(phone);
 
         const cred = this.state.credentials;
-        document.getElementById('conf-new-user').value  = '';
+        document.getElementById('conf-new-user').value  = cred.user || '';
         document.getElementById('conf-new-pass').value  = '';
         document.getElementById('conf-new-pass2').value = '';
     },
@@ -448,8 +448,8 @@ const admin = {
 
     changeCredentials() {
         const user  = document.getElementById('conf-new-user').value.trim();
-        const pass  = document.getElementById('conf-new-pass').value;
-        const pass2 = document.getElementById('conf-new-pass2').value;
+        const pass  = document.getElementById('conf-new-pass').value.trim();
+        const pass2 = document.getElementById('conf-new-pass2').value.trim();
         if (!user || !pass) return this.showDialog('Erro','Preencha usuário e nova senha.','info');
         if (pass !== pass2)  return this.showDialog('Erro','As senhas não coincidem.','info');
         this.state.credentials = { user, pass };

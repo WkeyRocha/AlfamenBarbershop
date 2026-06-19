@@ -1,0 +1,126 @@
+<!-- maked by rafael rocha — enhanced by Claude -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlfaMen BarberShop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body oncontextmenu="return false;">
+
+    <header class="navbar">
+        <div class="brand-wrapper">
+            <img src="logo.jpg" alt="Logo Pantera" class="logo-img">
+            <div class="brand-text">
+                ALFAMEN <span class="text-accent">BARBERSHOP</span>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <button class="btn-icon" onclick="app.toggleTheme()" title="Alternar tema">
+                <i class="fa-solid fa-moon" id="theme-icon"></i>
+            </button>
+            <button class="btn-text" id="btn-admin-trigger" onclick="app.handleAdminClick()">Admin</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Seu estilo,<br>nossa assinatura.</h1>
+            <p class="subtitle">Agende seu horário com exclusividade.</p>
+            
+            <div id="user-status-card" class="user-status hidden">
+                <div class="status-info">
+                    <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted);">Seu Agendamento</span>
+                    <strong id="user-booking-details">...</strong>
+                </div>
+                <button class="btn-small-danger" onclick="app.promptCancelBooking()">Cancelar</button>
+            </div>
+        </section>
+
+        <section id="services-grid" class="services-container"></section>
+    </main>
+
+    <!-- WhatsApp Float Button -->
+    <a id="whatsapp-float" class="whatsapp-float hidden" target="_blank" rel="noopener" title="Falar no WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- Modal Booking -->
+    <div id="modal-booking" class="modal-overlay hidden" style="z-index: 200;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-title">Agendar</h3>
+                <button class="btn-close" onclick="app.closeModal('modal-booking')">&times;</button>
+            </div>
+            
+            <div id="step-date" class="step-content">
+                <p class="step-label">Data</p>
+                <div id="calendar-wrapper" class="horizontal-scroll"></div>
+                <div id="time-wrapper" class="hidden">
+                    <p class="step-label" style="margin-top:20px;">Horário</p>
+                    <div id="time-grid" class="time-grid"></div>
+                </div>
+            </div>
+
+            <div id="step-form" class="step-content hidden">
+                <div class="summary-box">
+                    <span id="summary-service">Serviço</span>
+                    <span id="summary-datetime" class="highlight">Data</span>
+                </div>
+                <input type="text" id="client-name" class="input-field" placeholder="Seu Nome Completo">
+                <input type="tel" id="client-phone" class="input-field" placeholder="WhatsApp (DDD + Número)">
+                <button class="btn-primary" onclick="app.confirmBooking()">Confirmar Agendamento</button>
+                <button class="btn-text full-width" onclick="app.backToDate()">Voltar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Admin Login -->
+    <div id="modal-admin" class="modal-overlay hidden" style="z-index: 200;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Acesso Administrativo</h3>
+                <button class="btn-close" onclick="app.closeModal('modal-admin')">&times;</button>
+            </div>
+            <div id="admin-login-view">
+                <p style="margin-bottom:15px; font-size:0.9rem; color:var(--text-muted);">Área restrita à gerência.</p>
+                <input type="text" id="adm-user" class="input-field" placeholder="Usuário">
+                <input type="password" id="adm-pass" class="input-field" placeholder="Senha">
+                <button class="btn-primary" onclick="app.loginAdmin()">Acessar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Booking (Nível 1) -->
+    <!-- Modal Seletor de Ícones -->
+    <div id="modal-icons" class="modal-overlay hidden" style="z-index: 300;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Escolher Ícone</h3>
+                <button class="btn-close" onclick="app.closeModal('modal-icons')">&times;</button>
+            </div>
+            <div id="icons-grid" class="icons-grid"></div>
+        </div>
+    </div>
+
+    <!-- Dialog -->
+    <div id="modal-dialog" class="modal-overlay hidden" style="z-index: 400;">
+        <div class="modal-card" style="max-width: 350px; text-align: center;">
+            <div style="margin-bottom: 20px;">
+                <i id="dialog-icon" class="fa-solid fa-circle-exclamation" style="font-size: 2rem; color: var(--accent); margin-bottom: 15px;"></i>
+                <h3 id="dialog-title" style="margin-bottom: 10px;">Atenção</h3>
+                <p id="dialog-msg" style="color: var(--text-muted); font-size: 0.95rem;">Mensagem aqui</p>
+            </div>
+            <div class="dialog-actions">
+                <button id="btn-dialog-cancel" class="btn-text" style="width: 48%;">Cancelar</button>
+                <button id="btn-dialog-confirm" class="btn-primary" style="width: 48%; margin-top: 0;">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

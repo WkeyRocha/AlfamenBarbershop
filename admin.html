@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin — AlfaMen BarberShop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body" oncontextmenu="return false;">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-box">
+            <div class="login-logo">
+                <img src="logo.jpg" alt="Logo" class="login-logo-img">
+                <div>
+                    <div class="brand-text" style="font-size:1.1rem;">ALFAMEN <span class="text-accent">BARBERSHOP</span></div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Painel Administrativo</div>
+                </div>
+            </div>
+            <input type="text" id="login-user" class="input-field" placeholder="Usuário" autocomplete="username">
+            <input type="password" id="login-pass" class="input-field" placeholder="Senha" autocomplete="current-password"
+                onkeydown="if(event.key==='Enter') admin.login()">
+            <button class="btn-primary" onclick="admin.login()">Entrar</button>
+            <a href="index.html" class="btn-text full-width" style="display:block; text-align:center; margin-top:10px;">
+                ← Voltar ao site
+            </a>
+            <p id="login-error" class="login-error hidden">Usuário ou senha incorretos.</p>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="admin-panel" class="admin-panel hidden">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <img src="logo.jpg" alt="Logo" class="sidebar-logo">
+                <div>
+                    <div class="brand-text" style="font-size:0.85rem;">ALFAMEN</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">BarberShop</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" onclick="admin.switchPage('dashboard')" id="nav-dashboard">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" onclick="admin.switchPage('bookings')" id="nav-bookings">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>Agendamentos</span>
+                    <span class="nav-badge" id="badge-bookings">0</span>
+                </button>
+                <button class="nav-item" onclick="admin.switchPage('history')" id="nav-history">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Histórico</span>
+                </button>
+                <button class="nav-item" onclick="admin.switchPage('services')" id="nav-services">
+                    <i class="fa-solid fa-scissors"></i>
+                    <span>Serviços</span>
+                </button>
+                <button class="nav-item" onclick="admin.switchPage('config')" id="nav-config">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Configurações</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="index.html" class="sidebar-link">
+                    <i class="fa-solid fa-arrow-left"></i> Ver Site
+                </a>
+                <button class="sidebar-logout" onclick="admin.logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair
+                </button>
+                <button class="btn-icon sidebar-theme" onclick="admin.toggleTheme()" title="Alternar tema">
+                    <i class="fa-solid fa-moon" id="admin-theme-icon"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile top bar -->
+        <div class="mobile-topbar">
+            <button class="btn-icon" onclick="admin.toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <span id="mobile-page-title" style="font-weight:700;">Dashboard</span>
+            <button class="btn-icon" onclick="admin.logout()">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </div>
+
+        <!-- Main content -->
+        <main class="admin-main" id="admin-main">
+            <!-- DASHBOARD PAGE -->
+            <div id="page-dashboard" class="admin-page">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <div class="header-meta" id="dash-period-label">Hoje</div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card accent">
+                        <div class="kpi-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                        <div class="kpi-info">
+                            <div class="kpi-value" id="kpi-revenue">R$ 0</div>
+                            <div class="kpi-label">Faturamento Total</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div class="kpi-info">
+                            <div class="kpi-value" id="kpi-bookings">0</div>
+                            <div class="kpi-label">Agendamentos</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon"><i class="fa-solid fa-calendar-day"></i></div>
+                        <div class="kpi-info">
+                            <div class="kpi-value" id="kpi-today">0</div>
+                            <div class="kpi-label">Agendamentos Hoje</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon"><i class="fa-solid fa-scissors"></i></div>
+                        <div class="kpi-info">
+                            <div class="kpi-value" id="kpi-top-service">—</div>
+                            <div class="kpi-label">Serviço Mais Popular</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Period filter -->
+                <div class="section-bar">
+                    <h2>Faturamento por Período</h2>
+                    <div class="period-tabs">
+                        <button class="period-btn active" onclick="admin.setPeriod('week')" id="period-week">7 dias</button>
+                        <button class="period-btn" onclick="admin.setPeriod('month')" id="period-month">30 dias</button>
+                        <button class="period-btn" onclick="admin.setPeriod('all')" id="period-all">Tudo</button>
+                    </div>
+                </div>
+
+                <!-- Revenue chart (CSS-based bars) -->
+                <div class="chart-card">
+                    <div id="revenue-chart" class="revenue-chart"></div>
+                    <div class="chart-empty hidden" id="chart-empty">
+                        <i class="fa-solid fa-chart-bar" style="font-size:2.5rem; opacity:0.2;"></i>
+                        <p>Nenhum dado no período</p>
+                    </div>
+                </div>
+
+                <!-- Service breakdown -->
+                <div class="section-bar" style="margin-top:30px;">
+                    <h2>Por Serviço</h2>
+                </div>
+                <div class="service-breakdown" id="service-breakdown"></div>
+
+                <!-- Today's schedule -->
+                <div class="section-bar" style="margin-top:30px;">
+                    <h2>Agenda de Hoje</h2>
+                </div>
+                <div id="today-schedule" class="today-list"></div>
+            </div>
+
+            <!-- BOOKINGS PAGE -->
+            <div id="page-bookings" class="admin-page hidden">
+                <div class="page-header">
+                    <h1>Agendamentos</h1>
+                    <div class="header-actions">
+                        <input type="date" id="filter-date" class="input-field mini" onchange="admin.filterBookings()">
+                        <button class="btn-mini btn-clear" onclick="admin.clearFilter()">Limpar</button>
+                    </div>
+                </div>
+                <div id="bookings-list" class="bookings-list"></div>
+            </div>
+
+            <!-- HISTORY PAGE -->
+            <div id="page-history" class="admin-page hidden">
+                <div class="page-header">
+                    <h1>Histórico Completo</h1>
+                    <div class="header-actions">
+                        <input type="text" id="history-search" class="input-field mini" placeholder="Buscar cliente..." oninput="admin.searchHistory()">
+                    </div>
+                </div>
+                <div id="history-list" class="bookings-list"></div>
+            </div>
+
+            <!-- SERVICES PAGE -->
+            <div id="page-services" class="admin-page hidden">
+                <div class="page-header">
+                    <h1>Serviços</h1>
+                </div>
+                <div id="services-admin-list"></div>
+                <div class="add-service-form" id="add-service-form">
+                    <h3>Adicionar Serviço</h3>
+                    <div class="form-row">
+                        <input type="text" id="new-name" class="input-field" placeholder="Nome do serviço">
+                        <input type="number" id="new-price" class="input-field" placeholder="Preço (R$)" style="max-width:150px;">
+                    </div>
+                    <button class="btn-primary" style="max-width:200px;" onclick="admin.addService()">
+                        <i class="fa-solid fa-plus"></i> Adicionar
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONFIG PAGE -->
+            <div id="page-config" class="admin-page hidden">
+                <div class="page-header">
+                    <h1>Configurações</h1>
+                </div>
+                <div class="config-section">
+                    <h3><i class="fa-brands fa-whatsapp"></i> WhatsApp</h3>
+                    <p class="config-desc">Número exibido no botão flutuante do site e usado nos agendamentos. Insira apenas números (ex: 5511999999999).</p>
+                    <div class="form-row">
+                        <input type="text" id="conf-phone" class="input-field" placeholder="Ex: 5511999999999">
+                        <button class="btn-primary" style="max-width:160px; margin:0;" onclick="admin.saveConfig()">Salvar</button>
+                    </div>
+                    <div id="whatsapp-preview" class="whatsapp-preview hidden">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <span id="wa-preview-link"></span>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3><i class="fa-solid fa-lock"></i> Credenciais de Acesso</h3>
+                    <p class="config-desc">Altere o usuário e senha do painel administrativo.</p>
+                    <input type="text" id="conf-new-user" class="input-field" placeholder="Novo usuário">
+                    <input type="password" id="conf-new-pass" class="input-field" placeholder="Nova senha">
+                    <input type="password" id="conf-new-pass2" class="input-field" placeholder="Confirmar nova senha">
+                    <button class="btn-primary" style="max-width:200px;" onclick="admin.changeCredentials()">Alterar Credenciais</button>
+                </div>
+
+                <div class="config-section danger-zone">
+                    <h3><i class="fa-solid fa-triangle-exclamation"></i> Zona de Perigo</h3>
+                    <p class="config-desc">Ações irreversíveis. Tenha certeza antes de prosseguir.</p>
+                    <button class="btn-danger" onclick="admin.clearAllBookings()">
+                        <i class="fa-solid fa-trash"></i> Limpar todos os agendamentos
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Seletor de Ícones -->
+    <div id="modal-icons" class="modal-overlay hidden" style="z-index: 300;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Escolher Ícone</h3>
+                <button class="btn-close" onclick="admin.closeModal('modal-icons')">&times;</button>
+            </div>
+            <div id="icons-grid" class="icons-grid"></div>
+        </div>
+    </div>
+
+    <!-- Dialog -->
+    <div id="modal-dialog" class="modal-overlay hidden" style="z-index: 400;">
+        <div class="modal-card" style="max-width: 360px; text-align: center;">
+            <div style="margin-bottom: 20px;">
+                <i id="dialog-icon" class="fa-solid fa-circle-exclamation" style="font-size: 2rem; color: var(--accent); margin-bottom: 15px; display:block;"></i>
+                <h3 id="dialog-title" style="margin-bottom: 10px;">Atenção</h3>
+                <p id="dialog-msg" style="color: var(--text-muted); font-size: 0.95rem;">Mensagem aqui</p>
+            </div>
+            <div class="dialog-actions">
+                <button id="btn-dialog-cancel" class="btn-text" style="width: 48%;">Cancelar</button>
+                <button id="btn-dialog-confirm" class="btn-primary" style="width: 48%; margin-top: 0;">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
